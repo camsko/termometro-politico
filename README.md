@@ -1,0 +1,2 @@
+# termometro-politico
+Politímetro (?)
