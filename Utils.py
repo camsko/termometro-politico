@@ -7,7 +7,7 @@ headers = {
 }
 
 def obtener_contenido_link(link):
-  response = requests.get(link.strip(), headers=headers, verify=False)
+  response = requests.get(link.strip(), headers=headers)
   if response.status_code != 200:
      print(f'Hubo un error con el link. Código de error: {response.status_code}')
      return None
