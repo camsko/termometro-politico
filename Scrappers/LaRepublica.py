@@ -1,25 +1,33 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import date
+import BaseDatos
 import Utils
 
-def scrapear_noticias(fecha, cantidad_noticias):
+def scrapear_noticias(fecha, cantidad_noticias = -1):
   noticias = []
   links = []
+  links_totales = []
   pagina = 0
   links_nuevos, detener_busqueda = obtener_links(fecha, pagina)
-  links += links_nuevos
+  links_totales += links_nuevos
   while not detener_busqueda:
     pagina += 1
     links_nuevos, detener_busqueda = obtener_links(fecha, pagina)
-    links += links_nuevos
+    links_totales += links_nuevos
 
+  for link in links_totales:
+    if cantidad_noticias != -1 and len(links) >= cantidad_noticias: break
+    print(link)
+    links.append(link)
+
+  links = BaseDatos.filtrar_links('La Republica', links)
   for link in links:
-    if len(noticias) >= cantidad_noticias: break
-    print(f'link: {link}')
     contenido_html_noticia = Utils.obtener_contenido_link(link)
-    titulo = obtener_titulo(contenido_html_noticia)
-    contenido = obtener_contenido(contenido_html_noticia)
+    if not contenido_html_noticia:
+      continue
+    titulo = obtener_titulo(contenido_html_noticia, link)
+    contenido = obtener_contenido(contenido_html_noticia, link)
     noticia = Utils.construir_noticia('La Republica', link, titulo, contenido, fecha)
     noticias.append(noticia)
   return noticias
@@ -27,7 +35,7 @@ def scrapear_noticias(fecha, cantidad_noticias):
 def obtener_links(fecha_deseada, pagina):
   url = 'https://www.larepublica.net/seccion/ultima-hora'
   if pagina > 0:
-    url = f'{url}/{pagina}'
+    url = f'{url}/page/{pagina}'
   contenido_html = Utils.obtener_contenido_link(url)
   soup = BeautifulSoup(contenido_html, 'html.parser')
 
@@ -77,7 +85,9 @@ def obtener_fecha_formateada(fecha_sin_formato, fecha_deseada):
     fecha_formateada = f'{anio}-{mes}-{dia}'
     return fecha_formateada, False
 
-def obtener_titulo(html):
+def obtener_titulo(html, link):
+  if not html:
+    print(f"Este link falla: {link}")
   soup = BeautifulSoup(html, 'html.parser')
   titulo_div = soup.find('div', class_='title')
   titulo_h1 = titulo_div.find('h1')
@@ -85,16 +95,23 @@ def obtener_titulo(html):
   titulo = titulo.replace('{{slide.text | html}}', '').replace('\xa0',' ')
   return titulo
   
-def obtener_contenido(html):
+def obtener_contenido(html, link):
   soup = BeautifulSoup(html, 'html.parser')
   contenido_div = soup.find('div', class_='post-content-wrapper')
   contenido_section = contenido_div.find('section')
+  if not contenido_section:
+    print(f"Problemas con el contenido en el link {link}")
+    contenido_section = contenido_div.find('div', class_='classic-content-wrapper')
+  
+  if not contenido_section:
+    print(f"Mayores problemas con el contenido en el link {link}")
+
   parrafos = contenido_section.find_all('p')
   parrafos += contenido_section.find_all('li')
+  parrafos += contenido_section.find_all('div')
   textos = []
   for p in parrafos:
     textos.append(p.get_text(strip=False))
   contenido = ' '.join(textos)
   contenido = contenido.replace('{{slide.text | html}}', '').replace('\xa0',' ')
   return contenido
-    
