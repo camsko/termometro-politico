@@ -39,8 +39,8 @@ noticias_asamblea += [
     {"contenido": "Piden cuentas a Vicepresidente por destitución de Junta Directiva del Banco Nacional", "fecha": "2025-06-23"},
     {"contenido": "Resaltan informe de Comisión de Financiamiento en acusación de la Fiscalía a Presidente Chaves", "fecha": "2025-06-23"},
     {"contenido": "Debate: Crucitas requiere respuestas urgentes", "fecha": "2025-06-23"},
-    {"contenido": "Podcast Voces del Congreso: Asesores Legislativos: “es falso que nos pagan teléfono, viáticos, salarios millonarios, gasolina”", "fecha": "2025-06-23"},
-    {"contenido": "Podcast Conozca al diputado: Gilberto Campos, el repartidor de pan, amante del judo y de la cocina que llegó a una curul", "fecha": "2025-06-23"},
+    {"contenido": "Asesores Legislativos: “es falso que nos pagan teléfono, viáticos, salarios millonarios, gasolina”", "fecha": "2025-06-23"},
+    {"contenido": "Gilberto Campos, el repartidor de pan, amante del judo y de la cocina que llegó a una curul", "fecha": "2025-06-23"},
     {"contenido": "Continúa análisis sobre remoción de la Junta Directiva del Banco Nacional", "fecha": "2025-06-23"},
     {"contenido": "Inicia investigación por destitución de Junta Directiva del Banco Nacional", "fecha": "2025-06-20"},
     {"contenido": "Buscan frenar estafas desde centros penitenciarios", "fecha": "2025-06-20"},
@@ -65,8 +65,8 @@ noticias_asamblea += [
     {"contenido": "Vecinos denuncian que problemas con abastecimiento de agua siguen en La Carpio y Hatillo", "fecha": "2025-06-18"},
     {"contenido": "Hacienda reconoce efecto fiscal positivo de regular exploración y explotación minera", "fecha": "2025-06-18"},
     {"contenido": "INDER y MAG presentan dudas a reforma del Código Procesal Agrario", "fecha": "2025-06-18"},
-    {"contenido": "Podcast Voces del Congreso. Entrevista diputado Luis Fernando Mendoza: “Este gobierno está en deuda con Guanacaste”", "fecha": "2025-06-18"},
-    {"contenido": "Podcast Conozca al diputado. Entrevista diputada Rocío Alfaro: La diputada que desde la cuna forma parte de la izquierda de Costa Rica", "fecha": "2025-06-18"},
+    {"contenido": "Este gobierno está en deuda con Guanacaste", "fecha": "2025-06-18"},
+    {"contenido": "La diputada que desde la cuna forma parte de la izquierda de Costa Rica", "fecha": "2025-06-18"},
     {"contenido": "Reportaje: Crucitas, tierra de nadie", "fecha": "2025-06-18"},
     {"contenido": "Apoyan proyecto para certificar empresas que promuevan personal en exclusión social", "fecha": "2025-06-18"},
     {"contenido": "Diputados visitan Crucitas para buscar soluciones en la zona", "fecha": "2025-06-17"},
@@ -158,6 +158,8 @@ def generar_embeddings(textos):
     embeddings_texto.append(embedding_oraciones)
   return embeddings_texto
 
+
+
 def similitud(embedding1, embedding2):
   sim = util.cos_sim(embedding1, embedding2)
   return sim.tolist()[0][0]
@@ -168,21 +170,28 @@ print(f"Generando embeddings de noticias de la Asamblea.")
 embeddings_asamblea = generar_embeddings_asamblea(textos_asamblea)
 
 relaciones = []
+sum_similitudes = 0.0
+count_oraciones = 0
 
 for i in range(len(embeddings_noticias)):
+  count_oraciones = len(embeddings_noticias[i])
+
   for j in range(len(embeddings_asamblea)):
     mejor_similitud = -1
-    for k in range(len(embeddings_noticias[i])):
-      sim_cos = similitud(embeddings_noticias[i][k], embeddings_asamblea[j])
-      if sim_cos > mejor_similitud:
-        mejor_similitud = sim_cos
-    relaciones.append((noticias[i]['sitio'], noticias[i]['titulo'], noticias_asamblea[j]['contenido'], mejor_similitud))
+
+    for k in range(count_oraciones):
+      sum_similitudes += similitud(embeddings_noticias[i][k], embeddings_asamblea[j])
+      
+    avg_similitudes = sum_similitudes/count_oraciones
+    sum_similitudes = 0
+    relaciones.append((noticias[i]['sitio'], noticias[i]['titulo'], noticias_asamblea[j]['contenido'], avg_similitudes))
   print(f"({i + 1}) de {len(embeddings_noticias)}")
+
 
 for relacion in relaciones:
   # print(f"Noticia de CRHoy: {relacion[0]}")
   # print(f"Noticia de la Asamblea: {relacion[1]}")
-  if relacion[3] >= 0.6:
+  if relacion[3] >= 0.4:
     print(f"Noticia de {relacion[0]}: {relacion[1]}")
     print(f"Noticia de la Asamblea: {relacion[2]}")
     print(f'MUCHA RELACION')
