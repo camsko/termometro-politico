@@ -21,22 +21,23 @@ def agregar_noticias(noticias, para_asamblea = False):
     noticieros_coleccion.insert_many(noticias)
 
 def obtener_noticias(sitio = None, link = None, fecha = None, columnas = None):
-  if sitio == 'Asamblea':
-    noticias = asamblea_coleccion.find({})
-    return list(noticias)
   restricciones = {}
-  if sitio is not None:
+  if sitio is not None and sitio != "Asamblea":
     restricciones['sitio'] = sitio
   if link is not None:
     restricciones['link'] = link
   if fecha is not None:
     restricciones['fecha'] = fecha
+
+  coleccion = noticieros_coleccion
+  if sitio == 'Asamblea':
+    coleccion = asamblea_coleccion
   
   noticias = []
   if columnas:
-    noticias = noticieros_coleccion.find(restricciones, columnas)
+    noticias = coleccion.find(restricciones, columnas)
   else:
-    noticias = noticieros_coleccion.find(restricciones)
+    noticias = coleccion.find(restricciones)
   return list(noticias)
 
 def filtrar_links(sitio, links):
