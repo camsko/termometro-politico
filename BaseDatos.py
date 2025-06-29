@@ -20,13 +20,15 @@ def agregar_noticias(noticias, para_asamblea = False):
   else:
     noticieros_coleccion.insert_many(noticias)
 
-def obtener_noticias(sitio = None, fecha = None, columnas = None):
+def obtener_noticias(sitio = None, link = None, fecha = None, columnas = None):
   if sitio == 'Asamblea':
     noticias = asamblea_coleccion.find({})
-    return noticias
+    return list(noticias)
   restricciones = {}
   if sitio is not None:
     restricciones['sitio'] = sitio
+  if link is not None:
+    restricciones['link'] = link
   if fecha is not None:
     restricciones['fecha'] = fecha
   
@@ -45,3 +47,12 @@ def filtrar_links(sitio, links):
     if link not in solo_links:
       nuevos_filtrados.append(link)
   return nuevos_filtrados
+
+def actualizar_resumen_noticias(sitio, link, resumen):
+  actualizaciones = {
+    "$set": {"resumen": resumen}
+  }
+  if sitio == "Asamblea":
+    asamblea_coleccion.update_one({"link": link}, actualizaciones)
+  else:
+    noticieros_coleccion.update_one({"link": link}, actualizaciones)
