@@ -43,7 +43,7 @@ def calcular_relaciones(noticiero_comparacion, asamblea_comparacion, umbral):
   return relaciones, umbrales, noticias_habladas
 
 relaciones, umbrales, noticias_habladas = calcular_relaciones("contenido", "contenido", 0.7)
-relaciones.sort(key=lambda x: x[4], reverse=True)
+relaciones.sort(key=lambda x: x[4], reverse=False)
 
 Utils.imprimir_relaciones(relaciones)
 
@@ -67,19 +67,21 @@ for noticia in noticias_menos_habladas:
 
 data_para_jsonl = []
 for relacion in relaciones:
-  data = {"link_noticiero": relacion[0]['link'], "link_asamblea": relacion[1]['link'], "similitud": relacion[4]}
-  data_para_jsonl.append(data)
+  if ("poder judicial" in relacion[1]['contenido'].lower() or "judicial" in relacion[1]['contenido'].lower()) or \
+     ("poder judicial" in relacion[1]['titulo'].lower() or "judicial" in relacion[1]['titulo'].lower()):
+    data = {"sitio": relacion[0]['sitio'], "link_noticiero": relacion[0]['link'], "fecha_noticiero": relacion[0]['fecha'], "link_asamblea": relacion[1]['link'], "fecha_asamblea": relacion[1]['fecha'], "similitud": relacion[4]}
+    data_para_jsonl.append(data)
 with open("Relaciones.jsonl", "w", encoding="utf-8") as f:
   for data in data_para_jsonl:
     json.dump(data, f)
     f.write("\n")
 
-x = []
-y = []
-for key, value in umbrales.items():
-  y.append(value)
-  x.append(float(key))
+# x = []
+# y = []
+# for key, value in umbrales.items():
+#   y.append(value)
+#   x.append(float(key))
 
-fig, ax = plt.subplots()
-ax.plot(x, y)
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(x, y)
+# plt.show()

@@ -45,8 +45,6 @@ def dias_entre(fecha1, fecha2):
     formato = "%Y-%m-%d"
     f1 = datetime.strptime(fecha1, formato)
     f2 = datetime.strptime(fecha2, formato)
-    print(f1)
-    print(f2)
     return (f1 - f2).days
 
 def ocurre_antes(fecha1, fecha2):
@@ -79,10 +77,10 @@ def imprimir_relaciones(relaciones):
       sim = relacion[4]
       print("-" * 80)
       print(f"Noticia de {noticia['sitio']}: {noticia['titulo']}")
-      print(f"Link: {relacion[0]['link']}")
+      # print(f"Link: {relacion[0]['link']}")
       print(f"Noticia de Asamblea: {noticia_asamblea['titulo']}")
-      print(f"Link: {relacion[1]['link']}")
-      print(f"Tipo de comparación: {tipo_comp1} - {tipo_comp2}")
+      # print(f"Link: {relacion[1]['link']}")
+      # print(f"Tipo de comparación: {tipo_comp1} - {tipo_comp2}")
       print(f"Similitud: {sim}")
       quien_hablo_antes(noticia, noticia_asamblea)
       print("-" * 80)
